@@ -16,7 +16,7 @@ function extractSnowValue(td: CheerioElement): string {
   return td.text().trim();
 }
 
-function parseConditions(html: string, config: ResortConfig): ConditionsReport {
+export function parseConditions(html: string, config: ResortConfig): ConditionsReport {
   const $ = cheerio.load(html);
 
   const report: ConditionsReport = {
