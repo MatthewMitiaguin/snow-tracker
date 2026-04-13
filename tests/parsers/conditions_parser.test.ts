@@ -2,12 +2,12 @@ import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { describe, it, expect } from 'vitest';
-import { parseConditions } from '../src/conditions_service.js';
-import { RESORT_CONFIGS } from '../src/resort_config.js';
+import { parseConditions } from '../../src/parsers/conditions_parser.js';
+import { RESORT_CONFIGS } from '../../src/config/resorts.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const html = readFileSync(join(__dirname, 'fixtures/niseko.html'), 'utf-8');
+const html = readFileSync(join(__dirname, '../fixtures/niseko.html'), 'utf-8');
 const config = RESORT_CONFIGS['niseko'];
 
 describe('parseConditions (niseko fixture)', () => {

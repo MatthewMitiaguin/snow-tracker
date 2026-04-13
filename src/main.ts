@@ -1,4 +1,4 @@
-import { ResortService } from './conditions_service.js';
+import { ResortService } from './services/resort_service.js';
 
 const service = new ResortService('niseko');
 

@@ -1,4 +1,4 @@
-import { ResortConfig } from './types.js';
+import { ResortConfig } from '../types/index.js';
 
 export const RESORT_CONFIGS: Record<string, ResortConfig> = {
   niseko: {
