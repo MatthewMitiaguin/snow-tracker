@@ -1,0 +1,4 @@
+node_modules/
+dist/
+.env
+data/alert_history.json
