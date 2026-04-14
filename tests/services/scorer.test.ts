@@ -159,7 +159,7 @@ describe('integration', () => {
       ],
     }));
     expect(result.total).toBeGreaterThanOrEqual(8.0);
-    expect(result.label).toBe('🔥 SEND IT');
+    expect(result.label).toBe('🔥');
   });
 
   it('scores low for poor conditions', () => {

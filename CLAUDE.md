@@ -40,7 +40,7 @@ Inputs:
 Output example:
 
 $ snow check falls-creek  
-🔥 8.7/10 — SEND IT  
+🔥 8.7/10
 - 25cm forecast Thurs–Fri  
 - Cold temps → good quality powder  
 - Base: 140cm (solid coverage)  

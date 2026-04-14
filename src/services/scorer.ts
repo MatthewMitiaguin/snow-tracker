@@ -29,9 +29,9 @@ function scoreBaseDepth(cm: number): number {
 }
 
 function scoreLabel(total: number): string {
-  if (total >= 8.0) return '🔥 SEND IT';
-  if (total >= 6.0) return '✅ Good';
-  if (total >= 4.0) return '😐 Meh';
+  if (total >= 8.0) return '🔥';
+  if (total >= 6.0) return '✅';
+  if (total >= 4.0) return '😐';
   return '❌ Skip';
 }
 
