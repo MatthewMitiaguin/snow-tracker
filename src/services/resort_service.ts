@@ -18,21 +18,16 @@ export class ResortService {
   }
 
   async getConditions(): Promise<ConditionsReport> {
-    try {
-      const response = await fetch(this.config.url, {
-        headers: { 'User-Agent': 'snow-tracker/1.0' },
-        signal: AbortSignal.timeout(10000),
-      });
+    const response = await fetch(this.config.url, {
+      headers: { 'User-Agent': 'snow-tracker/1.0' },
+      signal: AbortSignal.timeout(10000),
+    });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const html = await response.text();
-      return parseConditions(html, this.config);
-    } catch (error) {
-      console.error(`Failed to fetch conditions for ${this.resortKey}:`, error);
-      throw error;
+    if (!response.ok) {
+      throw new Error(`Failed to fetch conditions for ${this.resortKey}: HTTP ${response.status}`);
     }
+
+    const html = await response.text();
+    return parseConditions(html, this.config);
   }
 }

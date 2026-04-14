@@ -29,6 +29,25 @@ export interface ConditionsReport {
   forecast: Forecast[];
 }
 
+export interface ScoredConditions {
+  resortKey: string;
+  report: ConditionsReport;
+  score: ScoreResult;
+}
+
+export interface Alert {
+  id: string;
+  resortKey: string;
+  resort: string;
+  timestamp: string;
+  score: ScoreResult;
+  report: ConditionsReport;
+  freshSnowCm: number;
+  baseDepthCm: number;
+  forecastSnowCm: number;
+  message: string;
+}
+
 export interface ResortConfig {
   name: string;
   url: string;

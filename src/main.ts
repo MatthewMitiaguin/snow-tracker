@@ -1,9 +1,11 @@
 import { Command } from 'commander';
-import { ResortService } from './services/resort_service.js';
-import { scoreConditions, parseSnowValue } from './services/scorer.js';
-import { ConditionsReport, ScoreResult } from './types/index.js';
-
-const AUSTRALIAN_RESORTS = ['falls-creek', 'hotham', 'perisher', 'thredbo'];
+import {
+  DEFAULT_ALERT_RESORTS,
+  getAlerts,
+  getScoredResorts,
+} from './services/alerts.js';
+import { parseSnowValue } from './services/scorer.js';
+import { ScoreResult } from './types/index.js';
 
 function printScore(resort: string, score: ScoreResult): void {
   console.log(`\n${score.total}/10 — ${score.label}`);
@@ -29,10 +31,16 @@ program
   .description('Rate conditions for a resort (1–10)')
   .action(async (resort: string) => {
     try {
-      const service = new ResortService(resort);
       console.log(`Fetching conditions for ${resort}...`);
-      const report = await service.getConditions();
-      const score = scoreConditions(report);
+      const [result] = await getScoredResorts({
+        resortKeys: [resort],
+        failFast: true,
+      });
+      if (!result) {
+        throw new Error(`No resort data available for ${resort}.`);
+      }
+
+      const { report, score } = result;
       printScore(report.resort, score);
     } catch (err) {
       console.error((err as Error).message);
@@ -43,24 +51,18 @@ program
 program
   .command('compare')
   .description('Compare all Australian resorts ranked by score')
-  .action(async () => {
-    console.log('Fetching conditions for all Australian resorts...\n');
-
-    const results = await Promise.all(
-      AUSTRALIAN_RESORTS.map(async (key) => {
-        try {
-          const report = await new ResortService(key).getConditions();
-          const score = scoreConditions(report);
-          return { report, score };
-        } catch {
-          console.warn(`⚠  Could not fetch data for ${key}`);
-          return null;
-        }
-      }),
+  .option('--mock', 'use realistic fake data instead of live scraping')
+  .action(async (opts: { mock?: boolean }) => {
+    const usingMock = opts.mock ?? false;
+    console.log(usingMock
+      ? 'Using mock data...\n'
+      : 'Fetching conditions for all Australian resorts...\n'
     );
 
-    const ranked = results
-      .filter((r): r is { report: ConditionsReport; score: ScoreResult } => r !== null)
+    const ranked = (await getScoredResorts({
+      useMock: usingMock,
+      onFetchError: (key) => console.warn(`⚠  Could not fetch data for ${key}`),
+    }))
       .sort((a, b) => b.score.total - a.score.total);
 
     if (!ranked.length) {
@@ -93,6 +95,39 @@ program
     });
 
     console.log();
+  });
+
+program
+  .command('alerts')
+  .description('List new high-scoring resort alerts')
+  .option('--mock', 'use realistic fake data instead of live scraping')
+  .option('--min-score <score>', 'minimum score required for an alert', '8')
+  .action(async (opts: { mock?: boolean; minScore: string }) => {
+    const minScore = Number(opts.minScore);
+    if (Number.isNaN(minScore)) {
+      console.error('--min-score must be a number.');
+      process.exit(1);
+    }
+
+    const alerts = await getAlerts({
+      useMock: opts.mock ?? false,
+      minScore,
+      resortKeys: DEFAULT_ALERT_RESORTS,
+      onFetchError: (key) => console.warn(`⚠  Could not fetch data for ${key}`),
+    });
+
+    if (!alerts.length) {
+      console.log('No new alerts.');
+      return;
+    }
+
+    for (const alert of alerts) {
+      console.log(`${alert.message} (${alert.score.label})`);
+      for (const line of alert.score.summary) {
+        console.log(`- ${line}`);
+      }
+      console.log();
+    }
   });
 
 program.parse();
