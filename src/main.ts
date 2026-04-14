@@ -1,9 +1,12 @@
+import 'dotenv/config';
 import { Command } from 'commander';
 import {
   DEFAULT_ALERT_RESORTS,
   getAlerts,
   getScoredResorts,
 } from './services/alerts.js';
+import { DynamoAlertHistory, InMemoryAlertHistory } from './services/dynamo_history.js';
+import { sendDiscordAlert } from './services/discord.js';
 import { parseSnowValue } from './services/scorer.js';
 import { ScoreResult } from './types/index.js';
 
@@ -109,10 +112,13 @@ program
       process.exit(1);
     }
 
+    const history = opts.mock ? new InMemoryAlertHistory() : new DynamoAlertHistory();
     const alerts = await getAlerts({
       useMock: opts.mock ?? false,
       minScore,
       resortKeys: DEFAULT_ALERT_RESORTS,
+      history,
+      recordHistory: true,
       onFetchError: (key) => console.warn(`⚠  Could not fetch data for ${key}`),
     });
 
@@ -121,12 +127,14 @@ program
       return;
     }
 
+    const webhookUrl = process.env.DISCORD_WEBHOOK_URL ?? '';
     for (const alert of alerts) {
       console.log(`${alert.message} (${alert.score.label})`);
       for (const line of alert.score.summary) {
         console.log(`- ${line}`);
       }
       console.log();
+      await sendDiscordAlert(alert, webhookUrl);
     }
   });
 
