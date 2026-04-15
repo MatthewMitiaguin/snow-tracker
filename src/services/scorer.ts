@@ -7,17 +7,17 @@ export function parseSnowValue(s: string | undefined): number {
 }
 
 function scoreFreshSnow(cm: number): number {
-  if (cm >= 25) return 4;
-  if (cm >= 15) return 3;
-  if (cm >= 6) return 2;
-  if (cm >= 1) return 1;
+  if (cm >= 20) return 4;
+  if (cm >= 10) return 3;
+  if (cm >= 5) return 2;
+  if (cm >= 2) return 1;
   return 0;
 }
 
 function scoreForecastSnow(cm: number): number {
-  if (cm >= 20) return 3;
-  if (cm >= 10) return 2;
-  if (cm >= 1) return 1;
+  if (cm >= 15) return 3;
+  if (cm >= 5) return 2;
+  if (cm >= 2) return 1;
   return 0;
 }
 
@@ -55,9 +55,8 @@ export function scoreConditions(report: ConditionsReport): ScoreResult {
   const base_depth = scoreBaseDepth(baseCm);
 
   let weather_penalty = 0;
-  if (baseCm < 50) weather_penalty -= 1;
-  if (freshCm > 0 && avgTemp > 0) weather_penalty -= 1;
-  if (maxWind > 60) weather_penalty -= 1;
+  if (baseCm < 40) weather_penalty -= 1;
+  if (maxWind > 75) weather_penalty -= 1;
 
   const raw = fresh_snow + forecast_snow + base_depth + weather_penalty;
   const clamped = Math.max(0, Math.min(9, raw));
@@ -73,8 +72,6 @@ export function scoreConditions(report: ConditionsReport): ScoreResult {
 
   if (freshCm > 0 && avgTemp <= -2) {
     summary.push('Cold temps → good powder quality');
-  } else if (freshCm > 0 && avgTemp > 0) {
-    summary.push('Warm temps → heavy/slushy snow');
   }
 
   if (baseCm > 0) {
@@ -82,7 +79,7 @@ export function scoreConditions(report: ConditionsReport): ScoreResult {
     summary.push(`Base: ${Math.round(baseCm)}cm (${coverage})`);
   }
 
-  if (maxWind > 60) {
+  if (maxWind > 75) {
     summary.push(`High wind ${Math.round(maxWind)}km/h → possible lift closures`);
   } else if (maxWind > 0) {
     summary.push('Low wind expected');

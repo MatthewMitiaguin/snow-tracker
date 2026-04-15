@@ -32,23 +32,23 @@ describe('fresh snow factor', () => {
     expect(result.factors.fresh_snow).toBe(0);
   });
 
-  it('scores 1 for 1–5cm', () => {
-    const result = scoreConditions(makeReport({ fresh_snow_cm: '5 cm' }));
+  it('scores 1 for 2–4cm', () => {
+    const result = scoreConditions(makeReport({ fresh_snow_cm: '3 cm' }));
     expect(result.factors.fresh_snow).toBe(1);
   });
 
-  it('scores 2 for 6–14cm', () => {
-    const result = scoreConditions(makeReport({ fresh_snow_cm: '10 cm' }));
+  it('scores 2 for 5–9cm', () => {
+    const result = scoreConditions(makeReport({ fresh_snow_cm: '7 cm' }));
     expect(result.factors.fresh_snow).toBe(2);
   });
 
-  it('scores 3 for 15–24cm', () => {
-    const result = scoreConditions(makeReport({ fresh_snow_cm: '20 cm' }));
+  it('scores 3 for 10–19cm', () => {
+    const result = scoreConditions(makeReport({ fresh_snow_cm: '12 cm' }));
     expect(result.factors.fresh_snow).toBe(3);
   });
 
-  it('scores 4 for 25cm+', () => {
-    const result = scoreConditions(makeReport({ fresh_snow_cm: '30 cm' }));
+  it('scores 4 for 20cm+', () => {
+    const result = scoreConditions(makeReport({ fresh_snow_cm: '22 cm' }));
     expect(result.factors.fresh_snow).toBe(4);
   });
 });
@@ -61,23 +61,23 @@ describe('forecast snow factor', () => {
     expect(result.factors.forecast_snow).toBe(0);
   });
 
-  it('scores 1 for 1–9cm total forecast', () => {
+  it('scores 1 for 2–4cm total forecast', () => {
     const result = scoreConditions(makeReport({
-      forecast: [{ date: '2026-04-14', temp_c: -3, precipitation_mm: 0, snow_accumulation_cm: 5 }],
+      forecast: [{ date: '2026-04-14', temp_c: -3, precipitation_mm: 0, snow_accumulation_cm: 3 }],
     }));
     expect(result.factors.forecast_snow).toBe(1);
   });
 
-  it('scores 2 for 10–19cm total forecast', () => {
+  it('scores 2 for 5–14cm total forecast', () => {
     const result = scoreConditions(makeReport({
-      forecast: [{ date: '2026-04-14', temp_c: -3, precipitation_mm: 0, snow_accumulation_cm: 15 }],
+      forecast: [{ date: '2026-04-14', temp_c: -3, precipitation_mm: 0, snow_accumulation_cm: 8 }],
     }));
     expect(result.factors.forecast_snow).toBe(2);
   });
 
-  it('scores 3 for 20cm+ total forecast', () => {
+  it('scores 3 for 15cm+ total forecast', () => {
     const result = scoreConditions(makeReport({
-      forecast: [{ date: '2026-04-14', temp_c: -3, precipitation_mm: 0, snow_accumulation_cm: 25 }],
+      forecast: [{ date: '2026-04-14', temp_c: -3, precipitation_mm: 0, snow_accumulation_cm: 18 }],
     }));
     expect(result.factors.forecast_snow).toBe(3);
   });
@@ -110,20 +110,20 @@ describe('base depth factor', () => {
 // --- Weather penalties ---
 
 describe('weather penalties', () => {
-  it('applies -1 for base under 50cm', () => {
+  it('applies -1 for base under 40cm', () => {
     const result = scoreConditions(makeReport({ snow_depth_base_cm: '30 cm' }));
     expect(result.factors.weather_penalty).toBeLessThanOrEqual(-1);
   });
 
-  it('applies -1 for warm temps with fresh snow', () => {
+  it('does not penalise warm temps with fresh snow', () => {
     const result = scoreConditions(makeReport({
       fresh_snow_cm: '15 cm',
       forecast: [{ date: '2026-04-14', temp_c: 2, precipitation_mm: 0, snow_accumulation_cm: 0 }],
     }));
-    expect(result.factors.weather_penalty).toBeLessThanOrEqual(-1);
+    expect(result.factors.weather_penalty).toBe(0);
   });
 
-  it('does not penalise warm temps without fresh snow', () => {
+  it('does not penalise warm temps', () => {
     const result = scoreConditions(makeReport({
       fresh_snow_cm: '0 cm',
       forecast: [{ date: '2026-04-14', temp_c: 3, precipitation_mm: 0, snow_accumulation_cm: 0 }],
@@ -131,14 +131,14 @@ describe('weather penalties', () => {
     expect(result.factors.weather_penalty).toBe(0);
   });
 
-  it('applies -1 for wind over 60km/h', () => {
+  it('applies -1 for wind over 75km/h', () => {
     const result = scoreConditions(makeReport({
       forecast: [{ date: '2026-04-14', temp_c: -5, precipitation_mm: 0, snow_accumulation_cm: 0, wind_kmh: 80 }],
     }));
     expect(result.factors.weather_penalty).toBeLessThanOrEqual(-1);
   });
 
-  it('does not penalise wind under 60km/h', () => {
+  it('does not penalise wind under 75km/h', () => {
     const result = scoreConditions(makeReport({
       forecast: [{ date: '2026-04-14', temp_c: -5, precipitation_mm: 0, snow_accumulation_cm: 0, wind_kmh: 40 }],
     }));
